@@ -1,0 +1,4 @@
+/deepseek-flask-app
+    /templates
+        index.html
+    app.py
