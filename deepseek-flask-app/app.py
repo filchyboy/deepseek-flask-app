@@ -2,8 +2,7 @@
 import os
 import json
 import requests
-from flask import Flask, request, render_template, jsonify
-from dotenv import load_dotenv
+from flask import Flask, request, render_template
 
 app = Flask(__name__)
 
@@ -32,7 +31,7 @@ def get_deepseek_coder_response(user_input):
         "Authorization": "Bearer " + os.getenv("DEEPSEEK_API_KEY"),
     }
 
-    response = requests.post(url, headers=headers, data=payload)
+    response = requests.post(url, headers=headers, data=payload, timeout=30)
     if response.status_code == 200:
         return response.json()
     else:
@@ -42,7 +41,7 @@ def get_deepseek_coder_response(user_input):
 @app.route("/", methods=["GET", "POST"])
 def index():
     '''
-    This function is the main function that handles the GET and 
+    This function is the main function that handles the GET and
     POST requests to the root URL
     '''
     if request.method == "POST":
