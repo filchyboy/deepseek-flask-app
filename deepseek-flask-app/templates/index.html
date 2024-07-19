@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>DeepSeek Coder Flask App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="container" id="inputArea">
+        <textarea id="userInput" placeholder="Type your query and press Enter"></textarea>
+        <div id="messageContainer">
+            <!-- Messages will be prepended here -->
+        </div>
+    </div>
+    <div class="container" id="outputArea">
+        <!-- Response will be displayed here -->
+    </div>
+    <script>
+        const inputArea = document.getElementById('userInput');
+
+        // Function to handle and format user input messages, including code blocks
+        function formatMessage(message) {
+            // Create a div element to hold the message
+            let messageBubble = document.createElement('div');
+            messageBubble.className = 'message-bubble';  // Assigning class name
+
+            // Handle code blocks by detecting and formatting them
+            const codeBlockRegex = /```([\s\S]+?)```/g;  // Regex to find text between triple backticks
+            message = message.replace(codeBlockRegex, (match, code) => {
+                return `<div class="code-block">
+                        <span class="code-label">Code</span>
+                        <button class="copy-btn" onclick="copyToClipboard(this)">Copy</button>
+                        <pre><code>${code}</code></pre>
+                    </div>`;
+            });
+
+            messageBubble.innerHTML = message;  // Setting message as HTML
+            return messageBubble;
+        }
+
+        function formatApiResponse(text) {
+            // Replace backticks with appropriate HTML for display
+            let formattedText = text.replace(/```([\s\S]+?)```/g, (match, code) => {
+                return `<div class="code-block">
+                            <span class="code-label">Code</span>
+                            <button class="copy-btn" onclick="copyToClipboard(this)">Copy</button>
+                            <pre><code>${code}</code></pre>
+                        </div>`;
+            });
+
+            // Wrap the entire formatted text in a response-bubble for styling
+            return `<div class="response-bubble">${formattedText}</div>`;
+        }
+
+        function copyToClipboard(btn) {
+            const codeText = btn.parentNode.querySelector('pre code').textContent;
+            navigator.clipboard.writeText(codeText).then(() => {
+                btn.textContent = 'Copied!';
+                setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+            }).catch(err => {
+                console.error('Error copying text: ', err);
+                btn.textContent = 'Failed to copy';
+            });
+        }
+
+        inputArea.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // Prevent default form submission
+                const userInput = this.value.trim();
+                if (userInput) {
+                    const messageBubble = formatMessage(userInput);
+                    document.getElementById('messageContainer').prepend(messageBubble);
+                    fetch('/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_input: userInput })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            const outputArea = document.getElementById('outputArea');
+                            const newOutput = formatApiResponse(data.content || "No response content");
+                            outputArea.insertAdjacentHTML('afterbegin', newOutput);
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            document.getElementById('outputArea').textContent = "Error fetching response";
+                        });
+                    this.value = '';  // Clear the input field after sending
+                }
+            }
+        });
+    </script>
+
+
+
+</body>
+
+</html>
