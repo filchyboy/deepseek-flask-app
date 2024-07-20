@@ -2,7 +2,8 @@ body {
     display: flex;
     margin: 0;
     height: 100vh;
-    font-family: sans-serif
+    font-family: sans-serif;
+    background-color: #f8f8f8;
 }
 
 .container {
@@ -24,7 +25,9 @@ body {
     background-color: #e0e0e0;
     border-radius: 15px;
     margin-bottom: 5px;
+    margin-top: 15px;
     word-wrap: break-word;
+
 }
 
 textarea {
